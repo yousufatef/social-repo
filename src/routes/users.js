@@ -1,30 +1,43 @@
 const express = require('express');
 
 const router = express.Router();
+const UserRepo = require('../repos/user-repo');
 
-router.get('/', (req, res) => {
-    res.send('Users route');
+router.get('/users', async (req, res) => {
+    const users = await UserRepo.find();
+    res.send(users);
 });
 
-router.get('/:id', (req, res) => {
-    const userId = req.params.id;
-    res.send(`User with ID: ${userId}`);
+router.get('/users/:id', async (req, res) => {
+    const {id} = req.params;
+    const user = await UserRepo.findById(id);
+   
+    if (user) {
+        res.send(user);
+    } else {
+        
+        return res.status(404).send({ message: 'User not found' });    
+    }
+
 });
 
-router.post('/create-user', (req, res) => {
+router.post('/create-user', async (req, res) => {
     const newUser = req.body;   
-    res.status(201).send(`User created: ${JSON.stringify(newUser)}`);
+    const createdUser = await UserRepo.insert(newUser);
+    res.status(201).send(createdUser);
 });
 
-router.put('/update-user/:id', (req, res) => {
+router.put('/update-user/:id', async (req, res) => {
     const userId = req.params.id;
     const updatedUser = req.body;   
-    res.send(`User with ID: ${userId} updated to: ${JSON.stringify(updatedUser)}`);
+    const user = await UserRepo.update({...updatedUser, id: userId});
+    res.send(user);
 });
 
-router.delete('/delete-user/:id', (req, res) => {
+router.delete('/delete-user/:id', async (req, res) => {
     const userId = req.params.id;
-    res.send(`User with ID: ${userId} deleted`);
+    const user = await UserRepo.delete(userId);
+    res.send(user);
 });
 
 module.exports = router;
